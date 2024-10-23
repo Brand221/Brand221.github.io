@@ -1,0 +1,15 @@
+{
+  "name": "schoolwebgame",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Brent Heeringa",
+  "license": "MIT",
+  "description": "",
+  "devDependencies": {
+    "electron": "^33.0.1"
+  }
+}
