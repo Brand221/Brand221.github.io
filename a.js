@@ -94,6 +94,20 @@ class Ship{
             element.hp = 0;
           }
       }
+      for(const element of hunters){
+        if(element.x >= this.x2 && element.x <= this.x1 && element.y >= this.y3 && element.y <= this.y2 && !element.dead && iFrames <= now.getTime() - 700){
+          iFrames = now;
+          this.hp -= 10
+          element.hp -= 10;
+        }
+
+        for(const e of element.bullets){
+          if(e.x <= this.x1 && e.x >= this.x2 && e.y >= this.y3 && e.y <= this.y2){
+            this.hp -= e.damage;
+            e.reachedTarget();
+          }
+        }
+    }
     }
     deadChecker(){
       if(this.hp <= 0){
@@ -167,11 +181,9 @@ class Hunter extends Enemy{
   constructor(x, y, size, hp){
     super(x, y, size, hp);
     this.shellcount = 0;
-    this.distanceX;
-    this.distanceY;
-    this.speedX;
-    this.speedY;
     this.lastShot = Date.now();
+    this.lastMoved = 0;
+    this.radDist = 20;
   }
 
   drawShip(){
@@ -184,34 +196,39 @@ class Hunter extends Enemy{
   
   shotGun(){
     let shelldamage = 7;
-    if(this.lastShot <= now.getTime() - 2000){
-        this.lastShot = now.getTime();
-        this.bullets[this.shellcount] = new Bullet(this.x1, this.y2 - this.size, shelldamage, "SH", 1)
-        this.bullets[this.shellcount + 1] = new Bullet(this.x1, this.y2 - this.size, shelldamage, "SH", 2)
-        this.bullets[this.shellcount + 2] = new Bullet(this.x1, this.y2 - this.size, shelldamage, "SH", 3)
-        this.bullets[this.shellcount + 3] = new Bullet(this.x1, this.y2 - this.size, shelldamage, "SH", 4)
-        this.bullets[this.shellcount + 4] = new Bullet(this.x1, this.y2 - this.size, shelldamage, "SH", 5)
+    if(this.lastShot <= Date.now() - 1500){
+        this.bullets[this.shellcount] = new Bullet(this.x1, this.y, shelldamage, "SH", 1)
+        this.bullets[this.shellcount + 1] = new Bullet(this.x1, this.y, shelldamage, "SH", 2)
+        this.bullets[this.shellcount + 2] = new Bullet(this.x1, this.y, shelldamage, "SH", 3)
+        this.bullets[this.shellcount + 3] = new Bullet(this.x1, this.y, shelldamage, "SH", 4)
+        this.bullets[this.shellcount + 4] = new Bullet(this.x1, this.y, shelldamage, "SH", 5)
         this.shellcount += 5;
+        this.lastShot = Date.now();
     }
   }
 
   AI(){
     this.shotGun();
-    if (this.lastShot <= now.getTime() - 2000){
-      this.distanceX = player.x - this.x;
+    if(this.lastMoved <= Date.now() - 1500){
+      this.distanceX = player.x + 100 - this.x;
       this.distanceY = player.y - this.y;
+      this.moveDistX = Math.abs(this.distanceX);
+      this.moveDistY = Math.abs(this.distanceY);
+      this.lastMoved = Date.now();
     }
     this.moveToPlayer();
   }
 
   moveToPlayer(){
-    this.speedX = this.distanceX / 100;
-    this.speedY = this.distanceY / 100;
-    if(player.x + 100 != this.x){
-      this.moveHor(this.speedX, 0);
+    this.speedX = this.distanceX / 20;
+    this.speedY = this.distanceY / 20;
+    this.moveDistX -= Math.abs(this.speedX);
+    this.moveDistY -= Math.abs(this.speedY);
+    if(this.moveDistX >= 0){
+      this.moveHor(this.speedX);
     }
-    if(player.y != this.y){
-      this.moveVer(0, this.speedY)
+    if(this.moveDistY >= 0){
+      this.moveVer(this.speedY);
     }
   }
 }
@@ -309,20 +326,23 @@ let iFrames;
 let neverShot = true;
 let neverShotGun = true;
 let gunMode = 1;
-let player;
-let hunter = new Hunter(canvasX / 2, canvasY/ 2, size, 20);
+let player = new Ship(100, 200, size, 50);
 let enemies = [];
+let hunters = [];
 let stars = [];
 let mastermind;
 let bfgDivision;
+let riptear;
 let weaponChanging = false;
 let levelChanger = false;
 let enemyCooldown;
 let rocketCount = 0;
 let enemyCount = 0;
+let hunterCount = 0;
 let bulletCount = 0;
 let starCount = 0;
 let explosionCount = 0;
+let levelHChance = 20
 let rockets = [];
 let explosions = [];
 let whendied;
@@ -334,14 +354,15 @@ function preload(){
   soundFormats('mp3', 'ogg');
   mastermind = loadSound('mastermind.mp3');
   bfgDivision = loadSound('bfgdivision.mp3');
+  riptear = loadSound('RipTear.mp3');
 }
 //alles in de begin status zetten
 function setup() {
     createCanvas(canvasX, canvasY, P2D,canvas);
-    player = new Ship(100, 200, size, 50);
     enemyCooldown = now.getTime() - 10000;
     mastermind.amp(0.3);
-    bfgDivision.amp(0.3)
+    bfgDivision.amp(0.3);
+    riptear.amp(0.3);
     iFrames = now.getTime() - 700;
     score = 0;
   }
@@ -375,23 +396,43 @@ function start(){
 }
 
 function Levelup(){
-  if(score == 10 && !levelChanger && level == 1){
+  if(score == 100 && !levelChanger && level == 1){
     mastermind.stop()
     level += 1
+    player.hp = player.maxHP
     enemyBuffer = 400;
     levelTimer = now.getTime();
     levelChanger = true;
     enemies = [];
+    hunters = [];
     enemyCount = enemies.length;
+    hunterCount = hunters.length;
   }
-  else if(score == 20 && !levelChanger && level == 2){
-    bfgDivision.pause();
+  else if(score == 200 && !levelChanger && level == 2){
+    bfgDivision.stop();
     level += 1;
     enemyBuffer = 200;
+    player.hp = player.maxHP
+    levelHChance = 15;
     levelTimer = now.getTime();
     levelChanger = true;
     enemies = [];
+    hunters = [];
     enemyCount = enemies.length;
+    hunterCount = hunters.length;
+  }
+  else if(score == 350 && !levelChanger && level == 3){
+    riptear.pause();
+    level = 4;
+    enemyBuffer = 150;
+    player.hp = player.maxHP
+    levelHChance = 10;
+    levelTimer = now.getTime();
+    levelChanger = true;
+    enemies = [];
+    hunters = [];
+    enemyCount = enemies.length;
+    hunterCount = hunters.length;
   }
 }
 
@@ -436,7 +477,24 @@ function changeLevel(){
     }
     else{
       console.log("change levels")
-      bfgDivision.loop()
+      riptear.loop()
+      levelChanger = false;
+    }
+  }
+  else if(levelChanger && level == 4){
+    if(levelTimer > now.getTime()- 3000){
+      noStroke();
+      fill(255)
+      text("completed the third level", (canvasX/ 2)- 100, canvasY/2)
+    }
+    else if(levelTimer > now.getTime() - 6000){
+      noStroke();
+      fill(255)
+      text("now entering Endless Mode", (canvasX/ 2)- 100, canvasY/2)
+    }
+    else{
+      console.log("change levels")
+      riptear.loop()
       levelChanger = false;
     }
   }
@@ -502,8 +560,6 @@ function doTheExplodie(){
       enemyColision();
       Levelup();
       changeLevel();
-      hunter.drawShip();
-      hunter.AI();
       hud();
     }
   }
@@ -550,6 +606,30 @@ function moveBullets(){
       }
     }
   }
+  for(const el of hunters){
+    for(const e of el.bullets){
+      if(e.shellNumber == 1){
+        e.summon();
+        e.move(-30, 0);
+      }
+      else if(e.shellNumber == 2){
+        e.summon();
+        e.move(-30, 2);
+      }
+      else if(e.shellNumber == 3){
+        e.summon();
+        e.move(-30, 4)
+      }
+      else if(e.shellNumber == 4){
+        e.summon();
+        e.move(-30, -2)
+      }
+      else if(e.shellNumber == 5){
+        e.summon();
+        e.move(-30, -4)
+      }
+    }
+  }
 }
 
 function moveRockets(){
@@ -564,9 +644,15 @@ function moveRockets(){
 
 // tekst op het scherm
 function hud(){
+  let levelString;
   let scoreString = "Score:" + score;
   let hpString = "HP:";
-  let levelString = "Level:" + level
+  if(level < 4){
+  levelString = "Level:" + level
+  }
+  else{
+    levelString = "Level:Endless"
+  }
   textSize(20);
   fill(255, 255, 255);
   noStroke();
@@ -605,10 +691,23 @@ function hud(){
 // om vijanden te maken
 function spawnEnemies(){
   let place = Math.floor(Math.random() * (canvasY - 1)) + 1
-  if(enemyCooldown <= now.getTime() - enemyBuffer && !levelChanger){
+  let hunterChance = Math.floor(Math.random() * (levelHChance - 1)) + 1;
+  if(enemyCooldown <= now.getTime() - enemyBuffer && !levelChanger && level == 1){
     enemyCooldown = now.getTime();
     enemies[enemyCount] = new Enemy(canvasX + 50, place, 20, 10);
     enemyCount++;
+  }
+  else if(enemyCooldown <= now.getTime() - enemyBuffer && !levelChanger && level > 1){
+    if(hunterChance == 1){
+      enemyCooldown = now.getTime();
+      hunters[hunterCount] = new Hunter(canvasX + 50, place, 20, 30);
+      hunterCount++;
+    }
+    else{
+      enemyCooldown = now.getTime();
+      enemies[enemyCount] = new Enemy(canvasX + 50, place, 20, 10);
+      enemyCount++;
+    }
   }
 }
 function showExplosion(){
@@ -622,6 +721,10 @@ function moveEnemies(){
     enemies[i].drawShip();
     enemies[i].moveHor(-5);
   }
+  for(let i of hunters){
+    i.drawShip();
+    i.AI();
+  }
 }
 function delEnemies(){
   for(let i = 0; i < enemies.length; i++){
@@ -629,6 +732,12 @@ function delEnemies(){
       enemies.splice(i, 1);
       enemyCount = enemies.length;
       // console.log("amount of enemies in array:" + enemies.length);
+    }
+  }
+  for(let i = 0; i < hunters.length; i++){
+    if(hunters[i].dead){
+      hunters.splice(i, 1);
+      hunterCount = hunters.length;
     }
   }
 }
@@ -659,12 +768,19 @@ function enemyColision(){
   for(let i in enemies){
     enemies[i].checkCollision();
   }
+  for(let i of hunters){
+    i.checkCollision();
+  }
 }
 // als hp kleiner is dan nul zal de vijanden dood gaan
 function checkIfEnemyDead(){
   for(let i in enemies){
     enemies[i].checkIfDead();
     enemies[i].upScore();
+  }
+  for(let i of hunters){
+    i.checkIfDead();
+    i.upScore();
   }
 }
   function changeGun(){
