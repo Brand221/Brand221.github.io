@@ -162,11 +162,15 @@ checkCollision(){
 }
 }
 }
-class Destroyer extends Enemy{
+class Hunter extends Enemy{
 
   constructor(x, y, size, hp){
     super(x, y, size, hp);
     this.shellcount = 0;
+    this.distanceX;
+    this.distanceY;
+    this.speedX;
+    this.speedY;
     this.lastShot = Date.now();
   }
 
@@ -181,7 +185,7 @@ class Destroyer extends Enemy{
   shotGun(){
     let shelldamage = 7;
     if(this.lastShot <= now.getTime() - 2000){
-        whenShot = now.getTime();
+        this.lastShot = now.getTime();
         this.bullets[this.shellcount] = new Bullet(this.x1, this.y2 - this.size, shelldamage, "SH", 1)
         this.bullets[this.shellcount + 1] = new Bullet(this.x1, this.y2 - this.size, shelldamage, "SH", 2)
         this.bullets[this.shellcount + 2] = new Bullet(this.x1, this.y2 - this.size, shelldamage, "SH", 3)
@@ -192,7 +196,23 @@ class Destroyer extends Enemy{
   }
 
   AI(){
-    this.shotGun()
+    this.shotGun();
+    if (this.lastShot <= now.getTime() - 2000){
+      this.distanceX = player.x - this.x;
+      this.distanceY = player.y - this.y;
+    }
+    this.moveToPlayer();
+  }
+
+  moveToPlayer(){
+    this.speedX = this.distanceX / 100;
+    this.speedY = this.distanceY / 100;
+    if(player.x + 100 != this.x){
+      this.moveHor(this.speedX, 0);
+    }
+    if(player.y != this.y){
+      this.moveVer(0, this.speedY)
+    }
   }
 }
 class Bullet{
@@ -290,6 +310,7 @@ let neverShot = true;
 let neverShotGun = true;
 let gunMode = 1;
 let player;
+let hunter = new Hunter(canvasX / 2, canvasY/ 2, size, 20);
 let enemies = [];
 let stars = [];
 let mastermind;
@@ -481,6 +502,8 @@ function doTheExplodie(){
       enemyColision();
       Levelup();
       changeLevel();
+      hunter.drawShip();
+      hunter.AI();
       hud();
     }
   }
@@ -650,12 +673,12 @@ function checkIfEnemyDead(){
         neverShotGun = true;
         weaponChanging = true;
     }
-    else if(keyIsDown(50) && !weaponChanging && level == 2){
+    else if(keyIsDown(50) && !weaponChanging && level > 1){
       whenShot = now.getTime() - 1000;
         gunMode = 2;
         weaponChanging = true;
     }
-    else if(keyIsDown(51) && !weaponChanging && level == 3){
+    else if(keyIsDown(51) && !weaponChanging && level > 2){
       whenShot = now.getTime() - 2000;
       gunMode = 3;
       weaponChanging = true;
