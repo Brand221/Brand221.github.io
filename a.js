@@ -333,6 +333,7 @@ let stars = [];
 let mastermind;
 let bfgDivision;
 let riptear;
+let cybergrind;
 let weaponChanging = false;
 let levelChanger = false;
 let enemyCooldown;
@@ -355,6 +356,7 @@ function preload(){
   mastermind = loadSound('mastermind.mp3');
   bfgDivision = loadSound('bfgdivision.mp3');
   riptear = loadSound('RipTear.mp3');
+  cybergrind = loadSound('cybergrind.mp3')
 }
 //alles in de begin status zetten
 function setup() {
@@ -363,6 +365,7 @@ function setup() {
     mastermind.amp(0.3);
     bfgDivision.amp(0.3);
     riptear.amp(0.3);
+    cybergrind.amp(0.3);
     iFrames = now.getTime() - 700;
     score = 0;
   }
@@ -396,7 +399,7 @@ function start(){
 }
 
 function Levelup(){
-  if(score == 100 && !levelChanger && level == 1){
+  if(score == 10 && !levelChanger && level == 1){
     mastermind.stop()
     level += 1
     player.hp = player.maxHP
@@ -408,7 +411,7 @@ function Levelup(){
     enemyCount = enemies.length;
     hunterCount = hunters.length;
   }
-  else if(score == 200 && !levelChanger && level == 2){
+  else if(score == 20 && !levelChanger && level == 2){
     bfgDivision.stop();
     level += 1;
     enemyBuffer = 200;
@@ -421,8 +424,8 @@ function Levelup(){
     enemyCount = enemies.length;
     hunterCount = hunters.length;
   }
-  else if(score == 350 && !levelChanger && level == 3){
-    riptear.pause();
+  else if(score == 35 && !levelChanger && level == 3){
+    riptear.stop();
     level = 4;
     enemyBuffer = 150;
     player.hp = player.maxHP
@@ -494,7 +497,7 @@ function changeLevel(){
     }
     else{
       console.log("change levels")
-      riptear.loop()
+      cybergrind.loop()
       levelChanger = false;
     }
   }
