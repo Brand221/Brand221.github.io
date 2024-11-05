@@ -15,8 +15,11 @@ class Star{
       this.x -= x;
   }
 }
+//class voor speler
 class Ship{
     constructor(x, y, size, hp){
+        //dit zijn variablelen voor de plaats en de vorm van het schip
+        this.size = size;
         this.x = x;
         this.y = y;
         this.x1 = x + size;
@@ -24,25 +27,32 @@ class Ship{
         this.y1 = y;
         this.y2 = y + size;
         this.y3 = y - size;
+        //de Hitpoints
         this.hp = hp;
         this.maxHP = hp;
-        this.size = size;
+        //een array voor alle kogels is handig voor colission
         this.bullets = [];
+        //zodat je de spatiebalk niet ingedrukt kan houden met de shotgun
         this.shot = false;
+        //of de speler dood is
         this.dead = false;
     }
+    //Horizontaal bewegen
     moveHor(speed){
       this.x1 += speed;
       this.x2 += speed;
       this.x += speed;
     }
+    //verticaal bewegen
     moveVer(speed){
       this.y1 += speed;
       this.y2 += speed;
       this.y3 += speed;
       this.y += speed;
     }
+    //om het schip op het scherm te zetten
     drawShip() {
+      //als de speler dood is hoeft hij niet meer op het scherm te staan
       if(!this.dead){
         stroke(128, 128, 128);
         fill(128, 128, 128);
@@ -50,21 +60,25 @@ class Ship{
       }
     }
 
+    //code voor de Heavy MG
     gun(){
+      //schade van de kogels
       let bullDamage = 5;
+      //32 is de keycode voor de spatiebalk en de whenshot is zodat de firerate niet oneindig is
       if(keyIsDown(32) && (whenShot <= now.getTime() - 66)){
-          whenShot = now.getTime();
+        whenShot = now.getTime();
+        //maak kogel aan
         this.bullets[bulletCount] = new Bullet(this.x1, this.y2 - this.size, bullDamage, "MG");
-        this.bullets[bulletCount].summon(10);
-      //   console.log(bulletCount);
+        //om de goede index bij te houden
         bulletCount++;
       }
     }
-
+    //code voor de shotgun
     shotGun(){
       let shelldamage = 7;
       if(keyIsDown(32) && (whenShot <= now.getTime() - 600) && !this.shot){
           whenShot = now.getTime();
+          //maken vijf kogels tegelijk aan anders is het geen shotgun
           this.bullets[bulletCount] = new Bullet(this.x1, this.y2 - this.size, shelldamage, "SH", 1)
           this.bullets[bulletCount + 1] = new Bullet(this.x1, this.y2 - this.size, shelldamage, "SH", 2)
           this.bullets[bulletCount + 2] = new Bullet(this.x1, this.y2 - this.size, shelldamage, "SH", 3)
@@ -74,21 +88,28 @@ class Ship{
           neverShotGun = false;
           this.shot = true;
       }
+      //zodat je spatiebalk niet ingedrukt kan houden
       else if(!keyIsDown(32)){
         this.shot = false;
       }
     }
+    //code voor de rocketlauncher
     rocketLauncher(){
       let rocketDamage = 20;
       if(keyIsDown(32) && (whenShot <= now.getTime() - 2000) && !this.shot){
         whenShot = now.getTime();
         rockets[rocketCount] = new Rocket(this.x1, this.y, rocketDamage)
+        this.shot = true;
+      }
+      else if(!keyIsDown(32)){
+        this.shot = false;
       }
     }
-
+    //om te checken of vijanden of kogels op dezelfde positie zijn als de speler
     checkCollision(){
       for(const element of enemies){
           if(element.x >= this.x2 && element.x <= this.x1 && element.y >= this.y3 && element.y <= this.y2 && !element.dead && iFrames <= now.getTime() - 700){
+            //iframes zijn voor dat je niet 500 keer geraakt kan worden in 1 seconde
             iFrames = now;
             this.hp -= 10
             element.hp = 0;
@@ -104,11 +125,13 @@ class Ship{
         for(const e of element.bullets){
           if(e.x <= this.x1 && e.x >= this.x2 && e.y >= this.y3 && e.y <= this.y2){
             this.hp -= e.damage;
+            //zodat de kogel kan worden gedespawnt
             e.reachedTarget();
           }
         }
     }
     }
+    //is de speler dood?
     deadChecker(){
       if(this.hp <= 0){
         this.hp = 0;
@@ -122,6 +145,8 @@ class Ship{
     }
   
   }
+
+//class van vijanden het implementeerd de player class zodat ik niet alles opnieuw hoef te schrijven
 class Enemy extends Ship{
 constructor(x, y, size, hp){
   super(x, y, size, hp)
@@ -132,6 +157,7 @@ constructor(x, y, size, hp){
   this.increasedScore = false;
 }
 
+//override de normale drawShip want het ziet er anders uit
 drawShip(){
   if(!this.dead){
     stroke(255, 0, 0)
@@ -146,6 +172,7 @@ checkIfDead(){
   }
 }
 
+// score omhoog wanneer  hij dood is
 upScore(){
   if(!(this.increasedScore) && this.dead){
     score++
@@ -153,6 +180,7 @@ upScore(){
   }
 }
 
+//collision tegen de kogels van speler
 checkCollision(){
   if(!this.dead){
     for(const element of player.bullets){
@@ -176,6 +204,7 @@ checkCollision(){
 }
 }
 }
+//class voor de hunter
 class Hunter extends Enemy{
 
   constructor(x, y, size, hp){
@@ -186,6 +215,7 @@ class Hunter extends Enemy{
     this.radDist = 20;
   }
 
+  //kleur is anders
   drawShip(){
     if(!this.dead){
       stroke(153, 0, 0)
@@ -194,6 +224,7 @@ class Hunter extends Enemy{
     }
   }
   
+  //andere teller en firerate
   shotGun(){
     let shelldamage = 5;
     if(this.lastShot <= Date.now() - 1900){
@@ -207,11 +238,14 @@ class Hunter extends Enemy{
     }
   }
 
+  //voor beweging en schieten
   AI(){
     this.shotGun();
+    //bereken eerst de afstand van een punt voor de speler
     if(this.lastMoved <= Date.now() - 1500){
       this.distanceX = player.x + 100 - this.x;
       this.distanceY = player.y - this.y;
+      //deze 2 zijn er zodat hij ook nog stopt
       this.moveDistX = Math.abs(this.distanceX);
       this.moveDistY = Math.abs(this.distanceY);
       this.lastMoved = Date.now();
@@ -219,9 +253,11 @@ class Hunter extends Enemy{
     this.moveToPlayer();
   }
 
+  //beweeg dan naar hem toe
   moveToPlayer(){
     this.speedX = this.distanceX / 20;
     this.speedY = this.distanceY / 20;
+    //deze 2 zijn er zodat hij ook nog stopt
     this.moveDistX -= Math.abs(this.speedX);
     this.moveDistY -= Math.abs(this.speedY);
     if(this.moveDistX >= 0){
@@ -313,40 +349,51 @@ expand(){
   }
 }
 //alle variabelen declaren
+//voor de canvas
 const canvas = document.getElementById("canvaas");
 const body = document.querySelector("body");
 let canvasX = 600;
 let canvasY = 400;
 let size = 20;
+//voor timers
 let whenShot;
+let whendied;
 let enemyBuffer = 600;
 let levelTimer;
 let now = new Date();
 let iFrames;
+let enemyCooldown;
+//tegen spamclicking
 let neverShot = true;
 let neverShotGun = true;
+//welk wapen je gebruikt
 let gunMode = 1;
+//de speler
 let player = new Ship(100, 200, size, 50);
+//arrays voor de objecten in mijn spel
 let enemies = [];
 let hunters = [];
 let stars = [];
+let rockets = [];
+let explosions = [];
+//variabelen voor muziek
 let mastermind;
 let bfgDivision;
 let riptear;
 let cybergrind;
+//booleans zodat de speler niet op knoppen kan blijven klikken
 let weaponChanging = false;
 let levelChanger = false;
-let enemyCooldown;
+//tellers voor de indexen van de arrays
 let rocketCount = 0;
 let enemyCount = 0;
 let hunterCount = 0;
 let bulletCount = 0;
 let starCount = 0;
 let explosionCount = 0;
+//voor het berekenen van de kans dat een hunter spawnt
 let levelHChance = 20
-let rockets = [];
-let explosions = [];
-let whendied;
+//spreekt voor zich
 let score;
 let died = false;
 let level = 0;
@@ -369,6 +416,8 @@ function setup() {
     iFrames = now.getTime() - 700;
     score = 0;
   }
+
+//checkt of de speler dood is meld dat en refresht de pagina
 function youDead(){
   if(player.dead){
     if(!died){
@@ -384,9 +433,11 @@ function youDead(){
 }
 //starscherm
 function start(){
+  // de achtergrond
   background(0);
+  //de tekst goed te maken
   textSize(30);
-  fill(255, 255, 255);
+  fill(255);
   noStroke();
   text("it's just a ship", canvasX/2 - 100, canvasY/2)
   textSize(15);
@@ -398,14 +449,19 @@ function start(){
   }
 }
 
+//level verder reset alles maak timers lager voor de spawner en hogere kans op hunters
 function Levelup(){
-  if(score == 10 && !levelChanger && level == 1){
+  if(score == 100 && !levelChanger && level == 1){
+    //stopt de muziek
     mastermind.stop()
     level += 1
+    //healt de speler
     player.hp = player.maxHP
+    //tijd tussen het spawnen van vijanden wordt lager
     enemyBuffer = 400;
     levelTimer = now.getTime();
     levelChanger = true;
+    //reset de vijanden
     enemies = [];
     hunters = [];
     enemyCount = enemies.length;
@@ -439,6 +495,7 @@ function Levelup(){
   }
 }
 
+//text op scherm tussen levels
 function changeLevel(){
   if(levelChanger && level == 2){
     if(levelTimer > now.getTime()- 3000){
@@ -509,15 +566,19 @@ function controls(){
   if(!player.dead){
     changeGun();
     //voor beweging
+    //voor naar rechts bewegen
     if (keyIsDown(68) && (player.x + player.size <= canvasX )){
       player.moveHor(shipXSpeed);
     }
+    //voor naar links
     if(keyIsDown(65) && (player.x - player.size >= 0)){
       player.moveHor(-shipXSpeed);
     }
+    //voor naar boven
     if (keyIsDown(87) && (player.y - player.size >= 0)){
       player.moveVer(-shipYSpeed);
     }
+    //voor naar beneden
     if(keyIsDown(83) && (player.y + player.size <= canvasY)){
       player.moveVer(shipYSpeed);
     }
@@ -529,6 +590,7 @@ function controls(){
   }
 }
 
+//explodeer de raketten
 function doTheExplodie(){
   for(let i in explosions){
     explosions[i].expand();
@@ -536,11 +598,14 @@ function doTheExplodie(){
 }
   //de functie waar ik alles in zet om de game te laten werken
   function draw() {
+    //startscherm
     if(level == 0){
       start();
     }
+    //de rest van het spel
     else{
       background(0);
+      //we moeten altijd weten hoelaat het is
       now = new Date();
       controls();
       space();
@@ -553,8 +618,10 @@ function doTheExplodie(){
       player.deadChecker();
       youDead();
       checkIfEnemyDead();
+      //fix memory leaks
       delEnemies();
       delBullets();
+      //schiet controls
       shoot();
       moveBullets();
       moveRockets();
@@ -563,11 +630,13 @@ function doTheExplodie(){
       enemyColision();
       Levelup();
       changeLevel();
+      //voor de user interface
       hud();
     }
   }
   //voor de geweren
   function shoot(){
+    //spelers mogen niet schieten wanneer ze dood zijn of als het level aan het veranderen is
     if (gunMode == 1 && !player.dead && !levelChanger) {
       //om de kogels te maken
         player.gun();
@@ -580,12 +649,16 @@ function doTheExplodie(){
     }
   }
 
+// om de kogels te laten zien en te laten bewegen
 function moveBullets(){
+  //kogels van de speler
   for(let i of player.bullets){
+    //Heavy MG
     if(i.type == "MG"){
       i.summon();
       i.move(30, 0);
     }
+    //de shotgun
     else if(i.type == "SH"){
       if(i.shellNumber == 1){
         i.summon();
@@ -609,6 +682,7 @@ function moveBullets(){
       }
     }
   }
+  //kogels van hunters
   for(const el of hunters){
     for(const e of el.bullets){
       if(e.shellNumber == 1){
@@ -634,7 +708,7 @@ function moveBullets(){
     }
   }
 }
-
+//bewegen en laten zien van raketten
 function moveRockets(){
   for(let i in rockets){
     if(rockets[i] != null){
@@ -693,13 +767,17 @@ function hud(){
 }
 // om vijanden te maken
 function spawnEnemies(){
+  //de plek waar ze spawnen is random
   let place = Math.floor(Math.random() * (canvasY - 1)) + 1
+  //de kans dat een hunter spawnt
   let hunterChance = Math.floor(Math.random() * (levelHChance - 1)) + 1;
+  //spawner voor level 1 zonder hunters
   if(enemyCooldown <= now.getTime() - enemyBuffer && !levelChanger && level == 1){
     enemyCooldown = now.getTime();
     enemies[enemyCount] = new Enemy(canvasX + 50, place, 20, 10);
     enemyCount++;
   }
+  //spawner voor level 2 en hoger
   else if(enemyCooldown <= now.getTime() - enemyBuffer && !levelChanger && level > 1){
     if(hunterChance == 1){
       enemyCooldown = now.getTime();
@@ -786,24 +864,28 @@ function checkIfEnemyDead(){
     i.upScore();
   }
 }
+  //verander van wapens
   function changeGun(){
+    //Heavy MG
     if(keyIsDown(49) && !weaponChanging){
         gunMode = 1;
         neverShotGun = true;
         weaponChanging = true;
     }
+    //Shotgun
     else if(keyIsDown(50) && !weaponChanging && level > 1){
       whenShot = now.getTime() - 1000;
         gunMode = 2;
         weaponChanging = true;
     }
+    //rocketlauncher
     else if(keyIsDown(51) && !weaponChanging && level > 2){
       whenShot = now.getTime() - 2000;
       gunMode = 3;
       weaponChanging = true;
     }
     //zodat de speler niet de knop ingedrukt kan houden
-    else if(!keyIsDown(50) && !keyIsDown(49)){
+    else if(!keyIsDown(50) && !keyIsDown(49) && !keyIsDown(51)){
       weaponChanging = false;
     }
   }
