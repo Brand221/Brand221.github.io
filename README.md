@@ -1,3 +1,5 @@
+<h1 align="center"><img src="./officialArt.png"></h1>
+
 Hallo meneer Broersen,
 dit is mijn speel deze README is er om de controls van het spel uit te leggen
 
