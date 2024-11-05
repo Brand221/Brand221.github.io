@@ -18,10 +18,7 @@ de nummer keys
 
 Muziek:
 
-Level 1: Mastermind van Mick Gordon
-
-Level 2: BFG Division van Mick Gordon
-
-Level 3: Rip & Tear van Mick Gordon
-
-Endless mode: The Cyber Grind van Meganeko
+1. Level 1: Mastermind van Mick Gordon
+1. Level 2: BFG Division van Mick Gordon
+1. Level 3: Rip & Tear van Mick Gordon
+1. Endless mode: The Cyber Grind van Meganeko
