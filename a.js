@@ -399,7 +399,7 @@ function start(){
 }
 
 function Levelup(){
-  if(score == 10 && !levelChanger && level == 1){
+  if(score == 100 && !levelChanger && level == 1){
     mastermind.stop()
     level += 1
     player.hp = player.maxHP
@@ -411,7 +411,7 @@ function Levelup(){
     enemyCount = enemies.length;
     hunterCount = hunters.length;
   }
-  else if(score == 20 && !levelChanger && level == 2){
+  else if(score == 200 && !levelChanger && level == 2){
     bfgDivision.stop();
     level += 1;
     enemyBuffer = 200;
@@ -424,7 +424,7 @@ function Levelup(){
     enemyCount = enemies.length;
     hunterCount = hunters.length;
   }
-  else if(score == 35 && !levelChanger && level == 3){
+  else if(score == 350 && !levelChanger && level == 3){
     riptear.stop();
     level = 4;
     enemyBuffer = 150;
