@@ -5,12 +5,10 @@ dit is mijn speel deze README is er om de controls van het spel uit te leggen
 
 beweging:
 
-    /|\
-     |
-     W
-<--A S D -->
-     |
-    \|/
+> W: omhoog
+> S: omlaag
+> A: links
+> D: Rechts
 
 veranderen van wapen:
 de nummer keys
