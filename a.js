@@ -195,8 +195,8 @@ class Hunter extends Enemy{
   }
   
   shotGun(){
-    let shelldamage = 7;
-    if(this.lastShot <= Date.now() - 1500){
+    let shelldamage = 5;
+    if(this.lastShot <= Date.now() - 1900){
         this.bullets[this.shellcount] = new Bullet(this.x1, this.y, shelldamage, "SH", 1)
         this.bullets[this.shellcount + 1] = new Bullet(this.x1, this.y, shelldamage, "SH", 2)
         this.bullets[this.shellcount + 2] = new Bullet(this.x1, this.y, shelldamage, "SH", 3)
@@ -399,7 +399,7 @@ function start(){
 }
 
 function Levelup(){
-  if(score == 100 && !levelChanger && level == 1){
+  if(score == 10 && !levelChanger && level == 1){
     mastermind.stop()
     level += 1
     player.hp = player.maxHP
