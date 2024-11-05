@@ -15,3 +15,13 @@ de nummer keys
 1: Heavy Machinegun
 2: Shotgun
 3: Rocket Launcher
+
+Muziek:
+
+Level 1: Mastermind van Mick Gordon
+
+Level 2: BFG Division van Mick Gordon
+
+Level 3: Rip & Tear van Mick Gordon
+
+Endless mode: The Cyber Grind van Meganeko
